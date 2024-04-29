@@ -42,8 +42,9 @@ export function extractRlsFields(schemaFile: string): RlsModel[] {
 export function appendRlsSettingsToMigration(
 	rlsModels: RlsModel[],
 	migrationsDir: string,
-	currentSetting: string,
+	currentSettingIsolation: string,
 	currentUser: boolean,
+	currentSettingBypass: string,
 ) {
 	const latestMigrationDir = findLatestMigrationDirectory(migrationsDir);
 	if (!latestMigrationDir) {
@@ -63,8 +64,9 @@ export function appendRlsSettingsToMigration(
 	const appendSqls = generateRlsStatements(
 		rlsModels,
 		migrationContent,
-		currentSetting,
+		currentSettingIsolation,
 		currentUser,
+		currentSettingBypass,
 	);
 	if (!appendSqls.length) {
 		console.log("No matched tables found");
@@ -94,8 +96,9 @@ function findLatestMigrationDirectory(
 function generateRlsStatements(
 	rlsModels: RlsModel[],
 	migrationContent: string,
-	currentSetting: string,
+	currentSettingIsolation: string,
 	currentUser: boolean,
+	currentSettingBypass: string,
 ): string[] {
 	const createTablePattern = /CREATE TABLE "([^"]+)"/g;
 	const matchedTables = Array.from(
@@ -106,11 +109,13 @@ function generateRlsStatements(
 	return rlsModels
 		.filter((model) => matchedTables.includes(model.table))
 		.map((model) => {
-			const alterTable = `ALTER TABLE "${model.table}" ENABLE ROW LEVEL SECURITY;`;
-			const createPolicy = `CREATE POLICY "${model.table}_${model.column}_policy" ON "${model.table}"`;
+			const alterTableEnable = `ALTER TABLE "${model.table}" ENABLE ROW LEVEL SECURITY;`;
+			const alterTableForce = `ALTER TABLE "${model.table}" FORCE ROW LEVEL SECURITY;`;
+			const createIsolationPolicy = `CREATE POLICY tenant_isolation_policy ON "${model.table}"`;
 			const using = currentUser
 				? `USING("${model.column}" = current_user);`
-				: `USING("${model.column}" = current_setting('${currentSetting}'));`;
-			return `${alterTable}\n${createPolicy} ${using}`;
+				: `USING("${model.column}" = current_setting('${currentSettingIsolation}'));`;
+			const createBypassPolicy = `CREATE POLICY bypass_rls_policy ON "${model.table}" USING (current_setting('${currentSettingBypass}', TRUE)::text = 'on');`;
+			return `${alterTableEnable}\n${alterTableForce}\n${createIsolationPolicy} ${using}\n${createBypassPolicy}`;
 		});
 }

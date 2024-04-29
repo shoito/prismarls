@@ -1,6 +1,6 @@
 {
   "name": "@shoito/prismarls",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./dist/index.js",
   "bin": {
     "prismarls": "./dist/cli.js"
@@ -10,10 +10,10 @@
     "dev": "ts-node src/cli.ts",
     "format": "npx @biomejs/biome format --write ./src",
     "lint": "npx @biomejs/biome check --apply ./src",
-    "migrate:dev": "npx prisma migrate dev --create-only --name migration",
-    "rls:append": "npx @shoito/prismarls --schema=./examples/prisma/schema.prisma --migrations=./examples/prisma/migrations --currentSetting=app.company_id",
+    "migrate:dev": "npx prisma migrate dev --create-only --name migration --schema=./examples/prisma/schema.prisma",
+    "rls:append": "npx @shoito/prismarls --schema=./examples/prisma/schema.prisma --migrations=./examples/prisma/migrations --currentSettingIsolation=app.company_id",
     "rls:migrate:dev": "npm run migrate:dev && npm run rls:append",
-    "migrate:deploy": "npx prisma migrate deploy",
+    "migrate:deploy": "npx prisma migrate deploy --schema=./examples/prisma/schema.prisma",
     "link": "npm link",
     "pack": "npm pack",
     "prepublish": "npm run build",
