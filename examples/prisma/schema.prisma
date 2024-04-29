@@ -13,11 +13,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// RLS enabled
-// current_setting('app.company_id')::cuid
-
 model Company {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) /// @RLS(table: "Company", column: "id")
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -33,8 +30,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?
+  companyId String? @map("company_id") /// @RLS(table: "users", column: "company_id")
   posts     Post[]
+  @@map("users")
 }
 
 model Post {
@@ -54,5 +52,5 @@ model PressRelease {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   company   Company  @relation(fields: [companyId], references: [id])
-  companyId String
+  companyId String  /// @RLS
 }

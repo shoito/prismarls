@@ -1,20 +1,50 @@
 {
-  "name": "prisma-rls-support",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "@shoito/prismarls",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "bin": {
+    "prismarls": "./dist/cli.js"
   },
-  "keywords": [
-    "prisma",
-    "rls"
-  ],
-  "author": "@shoito",
-  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/cli.ts",
+    "format": "npx @biomejs/biome format --write ./src",
+    "lint": "npx @biomejs/biome check --apply ./src",
+    "migrate:dev": "npx prisma migrate dev --create-only --name migration",
+    "rls:append": "npx @shoito/prismarls --schema=./examples/prisma/schema.prisma --migrations=./examples/prisma/migrations --currentSetting=app.company_id",
+    "rls:migrate:dev": "npm run migrate:dev && npm run rls:append",
+    "migrate:deploy": "npx prisma migrate deploy",
+    "link": "npm link",
+    "pack": "npm pack",
+    "publish": "npm publish"
+  },
   "devDependencies": {
+    "@biomejs/biome": "1.7.1",
+    "@prisma/client": "^5.13.0",
     "@types/node": "^20.12.7",
     "prisma": "^5.13.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@loancrate/prisma-schema-parser": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "shoito",
+  "license": "MIT",
+  "keywords": [
+    "PostgreSQL",
+    "RLS",
+    "Prisma"
+  ],
+  "bugs": "https://github.com/shoito/prismarls/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shoito/prismarls.git"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
