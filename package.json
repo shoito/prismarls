@@ -16,6 +16,7 @@
     "migrate:deploy": "npx prisma migrate deploy",
     "link": "npm link",
     "pack": "npm pack",
+    "prepublish": "npm run build",
     "publish": "npm publish"
   },
   "devDependencies": {
