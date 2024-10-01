@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { appendRlsSettingsToMigration, extractRlsFields } from ".";
+import { appendRlsSettingsToMigrations, extractRlsFields } from ".";
 
 interface CommandLineArguments {
 	schemaFile: string;
@@ -48,7 +48,7 @@ function main() {
 		console.log("No RLS fields found");
 		return;
 	}
-	appendRlsSettingsToMigration(
+	appendRlsSettingsToMigrations(
 		rlsModels,
 		args.migrationsDir,
 		args.currentSettingIsolation,

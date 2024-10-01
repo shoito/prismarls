@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from 'node:path';
 import {
 	type FieldDeclaration,
 	type ModelDeclaration,
@@ -37,59 +38,62 @@ export function extractRlsFields(schemaFile: string): RlsModel[] {
 		)
 		.filter((model) => model);
 }
-
-// Appends RLS settings to the latest migration file
-export function appendRlsSettingsToMigration(
-	rlsModels: RlsModel[],
-	migrationsDir: string,
-	currentSettingIsolation: string,
-	currentUser: boolean,
-	currentSettingBypass: string,
+// Appends RLS settings to the each migration file
+export function appendRlsSettingsToMigrations(
+    rlsModels: RlsModel[],
+    migrationsDir: string,
+    currentSettingIsolation: string,
+    currentUser: boolean,
+    currentSettingBypass: string,
 ) {
-	const latestMigrationDir = findLatestMigrationDirectory(migrationsDir);
-	if (!latestMigrationDir) {
-		console.log("No migration directory found");
-		return;
-	}
+    const migrationDirs = findMigrationDirectories(migrationsDir);
+    if (migrationDirs.length === 0) {
+        console.log("No migration directories found");
+        return;
+    }
 
-	const migrationFilePath = `${migrationsDir}/${latestMigrationDir}/migration.sql`;
-	const migrationContent = fs.readFileSync(migrationFilePath, {
-		encoding: "utf8",
-	});
-	if (migrationContent.includes("ENABLE ROW LEVEL SECURITY")) {
-		console.log("RLS already enabled");
-		return;
-	}
+    for (const dir of migrationDirs) {
+        const migrationFilePath = path.join(migrationsDir, dir, 'migration.sql');
+        if (!fs.existsSync(migrationFilePath)) {
+            console.log(`No migration.sql file found in ${dir}`);
+            continue;
+        }
+        const migrationContent = fs.readFileSync(migrationFilePath, {
+			encoding: "utf8",
+		});
+        if (migrationContent.includes("ENABLE ROW LEVEL SECURITY")) {
+            console.log(`RLS already enabled in ${dir}`);
+            continue;
+        }
 
-	const appendSqls = generateRlsStatements(
-		rlsModels,
-		migrationContent,
-		currentSettingIsolation,
-		currentUser,
-		currentSettingBypass,
-	);
-	if (!appendSqls.length) {
-		console.log("No matched tables found");
-		return;
-	}
+        const appendSqls = generateRlsStatements(
+            rlsModels,
+            migrationContent,
+            currentSettingIsolation,
+            currentUser,
+            currentSettingBypass,
+        );
+        if (!appendSqls.length) {
+            console.log(`No matched tables found in ${dir}`);
+            continue;
+        }
 
-	fs.appendFileSync(
-		migrationFilePath,
-		`\n-- RLS Settings\n${appendSqls.join("\n")}\n`,
-	);
+        fs.appendFileSync(
+            migrationFilePath,
+            `\n-- RLS Settings\n${appendSqls.join("\n")}\n`,
+        );
+        console.log(`RLS settings appended to ${dir}/migration.sql`);
+    }
 }
 
 // Finds the latest migration directory based on naming convention
-function findLatestMigrationDirectory(
+function findMigrationDirectories(
 	migrationsDir: string,
-): string | undefined {
-	const directories = fs
-		.readdirSync(migrationsDir, { withFileTypes: true })
-		.filter((dirent) => dirent.isDirectory())
-		.map((dirent) => dirent.name)
-		.sort((a, b) => b.localeCompare(a));
-
-	return directories.length > 0 ? directories[0] : undefined;
+): string[] {
+    return fs.readdirSync(migrationsDir, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name)
+        .sort((a, b) => b.localeCompare(a));
 }
 
 // Generates SQL statements for enabling RLS based on existing migrations and RLS models
