@@ -49,10 +49,8 @@ ALTER TABLE "PressRelease" ADD CONSTRAINT "PressRelease_companyId_fkey" FOREIGN 
 
 -- RLS Settings
 ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "users" FORCE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_policy ON "users" USING("company_id" = current_setting('app.company_id'));
 CREATE POLICY bypass_rls_policy ON "users" USING (current_setting('app.bypass_rls', TRUE)::text = 'on');
 ALTER TABLE "PressRelease" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "PressRelease" FORCE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_policy ON "PressRelease" USING("companyId" = current_setting('app.company_id'));
 CREATE POLICY bypass_rls_policy ON "PressRelease" USING (current_setting('app.bypass_rls', TRUE)::text = 'on');

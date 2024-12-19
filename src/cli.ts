@@ -8,6 +8,7 @@ interface CommandLineArguments {
 	currentSettingIsolation: string;
 	currentUser: boolean;
 	currentSettingBypass: string;
+	forceEnable: boolean;
 }
 
 // Parses command line arguments and returns structured data
@@ -25,6 +26,9 @@ function parseCommandLineArguments(): CommandLineArguments {
 	const currentSettingBypassArg = process.argv.find((arg) =>
 		arg.startsWith("--currentSettingBypass="),
 	);
+	const forceEnableArg = process.argv.find((arg) =>
+		arg.startsWith("--forceEnable"),
+	);
 
 	return {
 		schemaFile: schemaArg ? schemaArg.split("=")[1] : "./prisma/schema.prisma",
@@ -38,6 +42,7 @@ function parseCommandLineArguments(): CommandLineArguments {
 		currentSettingBypass: currentSettingBypassArg
 			? currentSettingBypassArg.split("=")[1]
 			: "app.bypass_rls",
+		forceEnable: !!forceEnableArg,
 	};
 }
 
@@ -54,6 +59,7 @@ function main() {
 		args.currentSettingIsolation,
 		args.currentUser,
 		args.currentSettingBypass,
+		args.forceEnable,
 	);
 }
 

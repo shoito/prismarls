@@ -10,6 +10,5 @@ CREATE TABLE "Company" (
 
 -- RLS Settings
 ALTER TABLE "Company" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "Company" FORCE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_policy ON "Company" USING("id" = current_setting('app.company_id'));
 CREATE POLICY bypass_rls_policy ON "Company" USING (current_setting('app.bypass_rls', TRUE)::text = 'on');
