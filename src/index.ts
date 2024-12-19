@@ -45,6 +45,7 @@ export function appendRlsSettingsToMigration(
 	currentSettingIsolation: string,
 	currentUser: boolean,
 	currentSettingBypass: string,
+	forceEnable: boolean,
 ) {
 	const latestMigrationDir = findLatestMigrationDirectory(migrationsDir);
 	if (!latestMigrationDir) {
@@ -67,6 +68,7 @@ export function appendRlsSettingsToMigration(
 		currentSettingIsolation,
 		currentUser,
 		currentSettingBypass,
+		forceEnable,
 	);
 	if (!appendSqls.length) {
 		console.log("No matched tables found");
@@ -99,6 +101,7 @@ function generateRlsStatements(
 	currentSettingIsolation: string,
 	currentUser: boolean,
 	currentSettingBypass: string,
+	forceEnable: boolean,
 ): string[] {
 	const createTablePattern = /CREATE TABLE "([^"]+)"/g;
 	const matchedTables = Array.from(
@@ -110,12 +113,14 @@ function generateRlsStatements(
 		.filter((model) => matchedTables.includes(model.table))
 		.map((model) => {
 			const alterTableEnable = `ALTER TABLE "${model.table}" ENABLE ROW LEVEL SECURITY;`;
-			const alterTableForce = `ALTER TABLE "${model.table}" FORCE ROW LEVEL SECURITY;`;
+			const alterTableForce = forceEnable
+				? `ALTER TABLE "${model.table}" FORCE ROW LEVEL SECURITY;\n`
+				: "";
 			const createIsolationPolicy = `CREATE POLICY tenant_isolation_policy ON "${model.table}"`;
 			const using = currentUser
 				? `USING("${model.column}" = current_user);`
 				: `USING("${model.column}" = current_setting('${currentSettingIsolation}'));`;
 			const createBypassPolicy = `CREATE POLICY bypass_rls_policy ON "${model.table}" USING (current_setting('${currentSettingBypass}', TRUE)::text = 'on');`;
-			return `${alterTableEnable}\n${alterTableForce}\n${createIsolationPolicy} ${using}\n${createBypassPolicy}`;
+			return `${alterTableEnable}\n${alterTableForce}${createIsolationPolicy} ${using}\n${createBypassPolicy}`;
 		});
 }

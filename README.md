@@ -69,6 +69,7 @@ model User {
 - `--currentSettingIsolation`: Specify the current setting for RLS isolation. Default is `app.tenant_id`.
 - `--currentUser`: Specify if using `current_user` with RLS. Default is `false`.
 - `--currentSettingBypass`: Specify the current setting for RLS bypass. Default is `app.bypass_rls`.
+- `--forceEnable`: Enable `FORCE ROW LEVEL SECURITY` for all tables. Default is `false`.
 
 ## Prisma Limitations
 
