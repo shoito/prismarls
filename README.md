@@ -75,6 +75,10 @@ model User {
 - Settings from `prisma db pull` do not include RLS configurations.
 - Deploying schemas with `prisma db push` does not apply RLS settings.
 
+## For Developers
+
+For detailed technical information on the project architecture, development setup, and contribution guidelines, please see [TECHNICAL_INFO.md](./TECHNICAL_INFO.md).
+
 ## License
 
 MIT
